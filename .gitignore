@@ -1,36 +1,18 @@
-# dependencies
 node_modules/
-
-# Next.js/build output
 .next/
 out/
 dist/
 build/
 coverage/
-
-# environment and secrets
 .env
 .env.*
 !.env.example
-
-# local databases and backups
 prisma/*.db
 prisma/*.db-journal
 *.sqlite
 *.sqlite3
 *.db
 *.db-journal
-
-# logs and caches
 npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-.turbo/
-.cache/
 .DS_Store
 Thumbs.db
-
-# editor
-.vscode/*
-!.vscode/extensions.json
-.idea/
