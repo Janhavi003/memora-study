@@ -1,9 +1,26 @@
-# Architecture — Phase 1
+# Architecture — Phase 2
 
-- `src/app`: App Router pages and global styles.
-- `src/components`: shell and reusable domain UI.
-- `src/lib/mock-data.ts`: explicitly demo-only data.
-- `src/lib/mock-service.ts`: in-memory deck/card operations.
-- `src/lib/generator-preview.ts`: minimal frontend-only preview heuristic.
+Memora remains a Next.js App Router application. API Route Handlers provide the HTTP boundary, Zod schemas define input contracts, a small response layer standardizes success/error envelopes, and `memoryStore` owns server-side demo data operations. The generation endpoint calls the existing local heuristic preview service; it does not call a cloud model.
 
-UI uses a service layer so a future phase can replace the mock adapter with API calls. No Route Handlers, Prisma, SQLite, scheduler, or full generator are included.
+```text
+HTTP request
+  -> App Router route handler
+  -> Zod schema / parseBody
+  -> memoryStore or local preview service
+  -> { data } or { error: { code, message, details? } }
+```
+
+The store is intentionally replaceable by a repository backed by SQLite/Prisma in Phase 3. No database, cloud API, or API key is required for this phase. The browser frontend continues using the Phase 1 mock service until the integration phase.
+
+## Route map
+
+- `/api/decks` and `/api/decks/:id`
+- `/api/decks/:id/cards` and `/api/decks/:id/cards/:cardId`
+- `/api/generation`
+- `/api/reviews`
+- `/api/search`
+- `/api/statistics`
+
+## Limitations
+
+The current store is process memory only. It is suitable for contract development and local demos, not durable storage or multi-user production. Review ratings toggle the due flag only; a proper spaced-repetition interval algorithm belongs to Phase 4. Authentication and authorization are intentionally absent for this single-user local-first project.

@@ -1,33 +1,30 @@
 # Memora
 
-**Turn notes into knowledge.**
+**Turn notes into knowledge.** Memora is an open-source, local-first study workspace for turning notes into flashcards and quizzes, organizing decks, and reviewing concepts.
 
-Phase 1 delivers the responsive frontend with mock services. It does not yet include a real API, SQLite database, durable persistence, or the full generation engine.
+## Phase 2 — Backend foundation
 
-## Features
-- Editorial ivory, forest-green, charcoal, and sage visual system.
-- Responsive navigation and light/dark theme toggle.
-- Landing page and demo.
-- Dashboard with clearly labeled sample metrics.
-- Deck library: search, subject filters, create, rename, duplicate, delete.
-- Deck details and card list.
-- Note-to-deck studio: paste/import `.txt`, `.md`, `.csv`; edit candidates; approve/remove; mock save-to-deck.
-- Focus study room: flip cards, keyboard shortcuts, navigation, self-assessment, completion summary.
-- Quiz mode, review queue, statistics, settings.
-- Vitest coverage for generation preview and mock-service operations.
+This phase adds a typed JSON API using Next.js Route Handlers, Zod request validation, consistent error responses, server-side demo storage, a generation-preview endpoint, search, reviews, and calculated summary statistics. The frontend remains available and still uses its Phase 1 mock service; wiring the UI to the API is reserved for the integration phase.
 
-## Stack
-Next.js App Router, React, TypeScript, Tailwind CSS, Lucide, Zod, next-themes, Vitest, Testing Library.
+## Technology
 
-## Run
-Requires Node.js LTS and npm.
+- Next.js App Router and React
+- TypeScript
+- Zod request validation
+- Vitest
+- Local heuristic generation preview (no cloud LLM or paid API key)
+
+## Setup
+
 ```bash
 npm install
 npm run dev
 ```
-Open the URL printed in the terminal.
 
-## Checks
+Open `http://localhost:3000`.
+
+## Quality commands
+
 ```bash
 npm run lint
 npm run typecheck
@@ -35,5 +32,31 @@ npm run test
 npm run build
 ```
 
-## Scope and limitations
-Mock data is not durable and resets when the app reloads. The note studio uses a simple local preview heuristic, not an LLM and not the final generation engine. There is no cloud AI integration. Dashboard metrics are sample data. No API or database exists in this phase. The original Phase 0 documentation is retained and updated to identify this phase's boundaries.
+## API quick reference
+
+| Method | Route | Purpose |
+|---|---|---|
+| GET, POST | `/api/decks` | List/create decks |
+| GET, PATCH, DELETE | `/api/decks/:id` | Read/update/delete a deck |
+| GET, POST | `/api/decks/:id/cards` | List/create cards |
+| PATCH, DELETE | `/api/decks/:id/cards/:cardId` | Update/delete a card |
+| POST | `/api/generation` | Validate notes and return heuristic card candidates |
+| POST | `/api/reviews` | Record a self-rated review |
+| GET | `/api/search?q=...` | Search decks and cards |
+| GET | `/api/statistics` | Get counts derived from in-memory data |
+
+Full request shapes and error codes are in [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md).
+
+## Important data limitation
+
+The API uses a server-process in-memory store seeded with demo data. Changes may be lost on restart; this is not durable persistence and is not a multi-user deployment design. SQLite and Prisma are planned for Phase 3. The API is not yet connected to the frontend's mock service. The generation endpoint uses lightweight local heuristics, not an LLM, and generated candidates should be reviewed before use.
+
+## Privacy
+
+No study notes are sent to a cloud AI provider by these endpoints. Do not expose this unauthenticated local API directly to the public internet.
+
+## Roadmap
+
+- Phase 3: SQLite/Prisma schema, migrations, seed data, durable repositories.
+- Phase 4: generation, quiz, duplicate detection, and spaced-repetition algorithms.
+- Phase 5: connect UI to API, end-to-end validation, and release packaging.
