@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Deck {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  subject       String   @default("General")
+  color         String   @default("sage")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastStudiedAt DateTime?
+  cards         Card[]
+  reviews       Review[]
+  sessions      StudySession[]
+}
+
+model Card {
+  id         String   @id @default(cuid())
+  deckId     String
+  type       String   @default("QUESTION_ANSWER")
+  question   String
+  answer     String
+  optionsJson String?
+  due        Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deck       Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  reviews    Review[]
+  @@index([deckId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  deckId     String
+  cardId     String
+  rating     String
+  reviewedAt DateTime @default(now())
+  deck       Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  @@index([deckId, reviewedAt])
+  @@index([cardId, reviewedAt])
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  deckId      String
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  cardsSeen   Int      @default(0)
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  deckId      String
+  score       Int      @default(0)
+  total       Int      @default(0)
+  answersJson String   @default("[]")
+  createdAt   DateTime @default(now())
+}
+
+model Preference {
+  key        String   @id
+  valueJson  String
+  updatedAt  DateTime @updatedAt
+}
+
+model GenerationRecord {
+  id          String   @id @default(cuid())
+  sourceHash  String
+  requested   Int
+  generated   Int
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root{--paper:48 33% 96%;--surface:45 50% 99%;--ink:145 13% 15%;--muted:105 10% 91%;--line:80 10% 84%;--forest:150 42% 25%;--sage:105 22% 88%;--clay:13 38% 49%}
+.dark{--paper:150 13% 9%;--surface:150 12% 13%;--ink:45 24% 92%;--muted:145 10% 20%;--line:145 8% 27%;--forest:142 35% 43%;--sage:145 12% 24%;--clay:13 45% 65%}
+*{box-sizing:border-box}html{min-height:100%}body{min-height:100vh;background:hsl(var(--paper));color:hsl(var(--ink))}button,input,textarea,select{font:inherit}::selection{background:hsl(var(--sage));color:hsl(var(--ink))}:focus-visible{outline:2px solid hsl(var(--forest));outline-offset:3px}a{text-underline-offset:4px}

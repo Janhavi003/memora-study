@@ -1,81 +1,80 @@
 # Memora
 
-**Turn notes into knowledge.**
+**Turn notes into knowledge.** Memora is an open-source, local-first study workspace for turning notes into flashcards and quizzes, organizing decks, and reviewing concepts.
 
-Memora is an open-source, local-first study workspace for turning notes into editable flashcards and quizzes, reviewing cards with spaced repetition, and tracking study progress—without requiring a paid cloud AI API.
+## Phase 2 — Backend foundation
 
-> **Phase 0 status:** Documentation and project foundation only. The application UI, API, database, and generation engine are not implemented yet.
+This phase adds a typed JSON API using Next.js Route Handlers, Zod request validation, consistent error responses, server-side demo storage, a generation-preview endpoint, search, reviews, and calculated summary statistics. The frontend remains available and still uses its Phase 1 mock service; wiring the UI to the API is reserved for the integration phase.
 
-## Product goals
+## Technology
 
-- Turn pasted notes and supported text files into editable study cards using local text-processing algorithms.
-- Organize cards into decks and subjects.
-- Study in a distraction-free flashcard room and take quizzes.
-- Schedule reviews using an SM-2-inspired scheduler.
-- Calculate progress from persisted application records.
-- Keep study content on the user's local installation by default.
+- Next.js App Router and React
+- TypeScript
+- Zod request validation
+- Vitest
+- Local heuristic generation preview (no cloud LLM or paid API key)
 
-## Planned features
-
-- Dashboard, deck library, deck details, note-to-deck studio, study room, quiz mode, review queue, statistics, and settings.
-- Question/answer, definition, fill-in-the-blank, and multiple-choice cards.
-- `.txt`, `.md`, and `.csv` import initially; no uploaded file is executed.
-- Light/dark themes, responsive layouts, accessible keyboard interactions, and useful empty/error/loading states.
-- SQLite persistence through Prisma for a single-user local installation.
-
-## Technology stack
-
-- Next.js App Router, React, TypeScript
-- Tailwind CSS, shadcn/ui conventions, Lucide icons
-- Zod validation; React Hook Form where it adds value
-- Next.js Route Handlers and modular TypeScript services
-- SQLite and Prisma ORM
-- Vitest and React Testing Library
-- npm, ESLint, Prettier, Git
-
-Exact package versions will be selected and locked in the frontend implementation phase after checking current compatibility. No dependencies or scripts are claimed as implemented in this phase.
-
-## Local generation, not cloud AI
-
-The initial engine is planned to use deterministic local algorithms: preprocessing, sentence segmentation, stop-word filtering, key-phrase extraction, sentence ranking, pattern-based definition extraction, template-generated questions, cloze deletion, distractor selection, and duplicate/quality checks. This is **not an LLM** and will not guarantee high-quality cards. Users will be able to edit or discard generated results. An optional local-model provider may be added later without making it a core dependency.
-
-## Documentation
-
-- [Product specification](docs/PRODUCT_SPEC.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Design system](docs/DESIGN_SYSTEM.md)
-- [API contracts](docs/API_CONTRACTS.md)
-- [Database schema proposal](docs/DATABASE_SCHEMA.md)
-- [Generation engine](docs/GENERATION_ENGINE.md)
-- [Spaced repetition](docs/SPACED_REPETITION.md)
-- [Development workflow](docs/DEVELOPMENT_WORKFLOW.md)
-
-## Planned local setup
-
-The project is in the documentation phase, so there is no runnable application yet. After implementation begins, the intended commands are:
+## Setup
 
 ```bash
 npm install
 npm run dev
+```
+
+Open `http://localhost:3000`.
+
+## Quality commands
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+## API quick reference
+
+| Method | Route | Purpose |
+|---|---|---|
+| GET, POST | `/api/decks` | List/create decks |
+| GET, PATCH, DELETE | `/api/decks/:id` | Read/update/delete a deck |
+| GET, POST | `/api/decks/:id/cards` | List/create cards |
+| PATCH, DELETE | `/api/decks/:id/cards/:cardId` | Update/delete a card |
+| POST | `/api/generation` | Validate notes and return heuristic card candidates |
+| POST | `/api/reviews` | Record a self-rated review |
+| GET | `/api/search?q=...` | Search decks and cards |
+| GET | `/api/statistics` | Get counts derived from in-memory data |
+
+Full request shapes and error codes are in [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md).
+
+## Important data limitation
+
+The API uses a server-process in-memory store seeded with demo data. Changes may be lost on restart; this is not durable persistence and is not a multi-user deployment design. SQLite and Prisma are planned for Phase 3. The API is not yet connected to the frontend's mock service. The generation endpoint uses lightweight local heuristics, not an LLM, and generated candidates should be reviewed before use.
+
+## Privacy
+
+No study notes are sent to a cloud AI provider by these endpoints. Do not expose this unauthenticated local API directly to the public internet.
+
+## Roadmap
+
+- Phase 3: SQLite/Prisma schema, migrations, seed data, durable repositories.
+- Phase 4: generation, quiz, duplicate detection, and spaced-repetition algorithms.
+- Phase 5: connect UI to API, end-to-end validation, and release packaging.
+
+
+## Phase 3 — SQLite persistence
+
+The API now stores decks, cards, reviews, and study timestamps in local SQLite using Prisma.
+
+```powershell
+Copy-Item .env.example .env
+npm install
+npm run db:migrate
+npm run db:seed
+npm run typecheck
 npm run lint
 npm run test
 npm run build
 ```
 
-These commands are targets, not executable scripts in Phase 0. See the development workflow for the phase plan.
-
-## Privacy and storage
-
-The intended core experience stores study content in a local SQLite database and processes imports locally. No external AI service is required. SQLite is appropriate for a single-user local installation; this architecture is not automatically a secure multi-user hosted deployment. Backups, local filesystem permissions, and device security remain the user's responsibility.
-
-## Limitations and future work
-
-The first generator will rely on heuristics and templates, so it may miss context, generate awkward prompts, or fail on notes without recognizable facts. PDF extraction, optional local language-model support, export/backup tooling, and broader deployment hardening are future candidates.
-
-## Screenshots
-
-Screenshots will be added after the frontend phase.
-
-## License
-
-No license has been selected yet. Before publishing the repository, choose a license (for example, MIT) and add the corresponding `LICENSE` file. Do not imply the project is licensed until that file is present.
+Use `npm run db:studio` to inspect the local database. Do not run `db:migrate` against a production database without reviewing the migration first. The frontend remains on mock data until the integration phase.

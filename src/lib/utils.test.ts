@@ -1,0 +1,2 @@
+import {describe,it,expect} from "vitest";import {formatDate} from "./utils";
+describe("formatDate",()=>{it("formats a date without throwing",()=>{expect(formatDate("2026-10-12")).toMatch(/Oct 12/)});});
