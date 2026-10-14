@@ -1,8 +1,8 @@
 {
   "name": "memora-study",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Open-source study workspace that transforms notes into flashcards and quizzes, with spaced repetition, progress tracking, and local-first learning tools.",
+  "description": "Memora study app with local SQLite persistence through Prisma.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,7 +11,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev --name init",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -21,7 +26,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "@prisma/client": "^6.19.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -39,6 +45,8 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "autoprefixer": "^10.4.20"
+    "autoprefixer": "^10.4.20",
+    "prisma": "^6.19.0",
+    "tsx": "^4.20.6"
   }
 }

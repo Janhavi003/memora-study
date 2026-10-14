@@ -1,0 +1,30 @@
+import { Prisma } from "@prisma/client";
+import type { Deck, Flashcard, Rating } from "../types";
+import type { CreateCardInput, CreateDeckInput, UpdateCardInput, UpdateDeckInput } from "../validation/api-schemas";
+import { prisma } from "./prisma";
+
+function toCard(row: { id: string; deckId: string; type: string; question: string; answer: string; optionsJson: string | null; due: boolean }): Flashcard {
+  let options: string[] | undefined;
+  if (row.optionsJson) { try { options = JSON.parse(row.optionsJson) as string[]; } catch { options = undefined; } }
+  return { id: row.id, deckId: row.deckId, type: row.type as Flashcard["type"], question: row.question, answer: row.answer, options, due: row.due };
+}
+function toDeck(row: Prisma.DeckGetPayload<{ include: { cards: true } }>): Deck {
+  return { id: row.id, name: row.name, description: row.description, subject: row.subject, color: row.color,
+    cards: row.cards.map(toCard), updatedAt: row.updatedAt.toISOString(),
+    ...(row.lastStudiedAt ? { lastStudiedAt: row.lastStudiedAt.toISOString() } : {}) };
+}
+const includeCards = { cards: { orderBy: { createdAt: "asc" as const } } };
+
+export const prismaStore = {
+  async listDecks(): Promise<Deck[]> { const rows = await prisma.deck.findMany({ include: includeCards, orderBy: { updatedAt: "desc" } }); return rows.map(toDeck); },
+  async getDeck(id: string): Promise<Deck | undefined> { const row = await prisma.deck.findUnique({ where: { id }, include: includeCards }); return row ? toDeck(row) : undefined; },
+  async createDeck(input: CreateDeckInput): Promise<Deck> { const row = await prisma.deck.create({ data: { name: input.name, description: input.description ?? "", subject: input.subject ?? "General" }, include: includeCards }); return toDeck(row); },
+  async updateDeck(id: string, input: UpdateDeckInput): Promise<Deck | undefined> { const found = await prisma.deck.findUnique({ where: { id } }); if (!found) return undefined; const row = await prisma.deck.update({ where: { id }, data: input, include: includeCards }); return toDeck(row); },
+  async deleteDeck(id: string): Promise<boolean> { try { await prisma.deck.delete({ where: { id } }); return true; } catch (error) { if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") return false; throw error; } },
+  async createCard(deckId: string, input: CreateCardInput): Promise<Flashcard | undefined> { if (!await prisma.deck.findUnique({ where: { id: deckId }, select: { id: true } })) return undefined; const row = await prisma.card.create({ data: { deckId, type: input.type, question: input.question, answer: input.answer, optionsJson: input.options ? JSON.stringify(input.options) : null } }); return toCard(row); },
+  async updateCard(deckId: string, cardId: string, input: UpdateCardInput): Promise<Flashcard | undefined> { const found = await prisma.card.findFirst({ where: { id: cardId, deckId } }); if (!found) return undefined; const row = await prisma.card.update({ where: { id: cardId }, data: { ...(input.type !== undefined ? { type: input.type } : {}), ...(input.question !== undefined ? { question: input.question } : {}), ...(input.answer !== undefined ? { answer: input.answer } : {}), ...(input.options !== undefined ? { optionsJson: JSON.stringify(input.options) } : {}) } }); return toCard(row); },
+  async deleteCard(deckId: string, cardId: string): Promise<boolean> { const found = await prisma.card.findFirst({ where: { id: cardId, deckId }, select: { id: true } }); if (!found) return false; await prisma.card.delete({ where: { id: cardId } }); return true; },
+  async search(query: string) { const q = query.toLocaleLowerCase(); const decks = await prisma.deck.findMany({ include: { cards: true } }); return decks.flatMap((deck) => { const deckMatches = `${deck.name} ${deck.description} ${deck.subject}`.toLocaleLowerCase().includes(q); const matchingCards = deck.cards.filter((card) => `${card.question} ${card.answer}`.toLocaleLowerCase().includes(q)); return [...(deckMatches ? [{ kind: "deck" as const, deckId: deck.id, deckName: deck.name, title: deck.name, excerpt: deck.description }] : []), ...matchingCards.map((card) => ({ kind: "card" as const, deckId: deck.id, deckName: deck.name, cardId: card.id, title: card.question, excerpt: card.answer }))]; }); },
+  async addReview(input: { deckId: string; cardId: string; rating: Rating; reviewedAt?: string }) { const card = await prisma.card.findFirst({ where: { id: input.cardId, deckId: input.deckId }, select: { id: true } }); if (!card) return undefined; const reviewedAt = input.reviewedAt ? new Date(input.reviewedAt) : new Date(); const [review] = await prisma.$transaction([prisma.review.create({ data: { deckId: input.deckId, cardId: input.cardId, rating: input.rating, reviewedAt } }), prisma.card.update({ where: { id: input.cardId }, data: { due: input.rating === "AGAIN" || input.rating === "HARD" } }), prisma.deck.update({ where: { id: input.deckId }, data: { lastStudiedAt: reviewedAt } })]); return { id: review.id, deckId: review.deckId, cardId: review.cardId, rating: review.rating as Rating, reviewedAt: review.reviewedAt.toISOString() }; },
+  async statistics() { const [totalDecks, totalCards, dueCards, totalReviews, reviewsToday, goodReviews, easyReviews] = await Promise.all([prisma.deck.count(), prisma.card.count(), prisma.card.count({ where: { due: true } }), prisma.review.count(), prisma.review.count({ where: { reviewedAt: { gte: new Date(new Date().setHours(0,0,0,0)) } } }), prisma.review.count({ where: { rating: "GOOD" } }), prisma.review.count({ where: { rating: "EASY" } })]); return { totalDecks, totalCards, dueCards, totalReviews, reviewsToday, accuracy: totalReviews ? Math.round(((goodReviews + easyReviews) / totalReviews) * 100) : null }; },
+};

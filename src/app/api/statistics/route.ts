@@ -1,6 +1,6 @@
 import { ok } from "@/lib/server/api-response";
-import { memoryStore } from "@/lib/server/memory-store";
+import { prismaStore } from "@/lib/server/prisma-store";
 
 export async function GET() {
-  return ok(memoryStore.statistics());
+  return ok(await prismaStore.statistics());
 }

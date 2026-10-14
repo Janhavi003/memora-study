@@ -60,3 +60,21 @@ No study notes are sent to a cloud AI provider by these endpoints. Do not expose
 - Phase 3: SQLite/Prisma schema, migrations, seed data, durable repositories.
 - Phase 4: generation, quiz, duplicate detection, and spaced-repetition algorithms.
 - Phase 5: connect UI to API, end-to-end validation, and release packaging.
+
+
+## Phase 3 — SQLite persistence
+
+The API now stores decks, cards, reviews, and study timestamps in local SQLite using Prisma.
+
+```powershell
+Copy-Item .env.example .env
+npm install
+npm run db:migrate
+npm run db:seed
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+```
+
+Use `npm run db:studio` to inspect the local database. Do not run `db:migrate` against a production database without reviewing the migration first. The frontend remains on mock data until the integration phase.

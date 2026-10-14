@@ -24,3 +24,7 @@ The store is intentionally replaceable by a repository backed by SQLite/Prisma i
 ## Limitations
 
 The current store is process memory only. It is suitable for contract development and local demos, not durable storage or multi-user production. Review ratings toggle the due flag only; a proper spaced-repetition interval algorithm belongs to Phase 4. Authentication and authorization are intentionally absent for this single-user local-first project.
+
+
+## Persistence (Phase 3)
+API handlers use `src/lib/server/prisma-store.ts`, backed by the singleton Prisma client and SQLite. The in-memory store remains only as a Phase 2 reference/test fixture.
