@@ -1,32 +1,26 @@
-# Phase 5 — Integration and Release Checklist
+# Phase 5 Integration and Release Checklist
 
-This phase is a release-hardening pass over the Phase 4 codebase. Run the checks locally before considering the release complete.
+## Apply database changes
 
-## Environment and database
-- [ ] Confirm `.env` points to the intended local SQLite file.
-- [ ] Run `npm run db:generate`.
-- [ ] Run `npx prisma migrate status`.
-- [ ] Run `npx prisma validate`.
-- [ ] Confirm `.env`, `dev.db`, and backups are ignored by Git.
+After installing dependencies, run `npx prisma migrate dev --name phase5_review_schedule` and `npm run db:generate`. This adds persistent repetition count, interval, ease factor, and due date fields to cards.
 
-## Quality gates
+## Functional smoke tests
+
+- [ ] Create a deck using the database-backed API.
+- [ ] Open Create, paste notes with several complete sentences, and generate candidates.
+- [ ] Exclude a candidate and confirm it is not saved.
+- [ ] Save approved candidates and confirm they appear after a browser refresh.
+- [ ] Generate similar notes and confirm duplicates are flagged against saved cards.
+- [ ] Submit AGAIN, HARD, GOOD, and EASY ratings; confirm review history and the card schedule are persisted.
+- [ ] Restart the development server and confirm decks/cards remain available.
+
+## Automated checks
+
 - [ ] `npm run typecheck`
 - [ ] `npm run lint`
 - [ ] `npm run test`
 - [ ] `npm run build`
 
-## Manual smoke tests
-- [ ] Start with `npm run dev` and open `http://localhost:3000`.
-- [ ] Create a deck and confirm it remains after restarting the server.
-- [ ] Create a card, reload the deck, and confirm it persists.
-- [ ] Submit notes to `/api/generation`; inspect candidates and duplicate flags.
-- [ ] Review a card and confirm a review record and deck last-studied timestamp are stored.
-- [ ] Verify API validation errors are readable and malformed requests do not crash the app.
-- [ ] Check the browser console and terminal for runtime errors.
+## Notes
 
-## Important current limitations
-- The Create page still uses `mockService` and the browser preview generator; it is not yet wired to the Prisma-backed generation and save APIs.
-- The Prisma review handler currently records a review and sets the card's `due` boolean, but does not persist the full `scheduleReview` interval/ease/repetition state.
-- Generation is a local heuristic, not an LLM; candidates should be reviewed before use.
-
-Do not mark Phase 5 fully complete until the integration limitations above are resolved and the smoke tests pass.
+The local generator is heuristic-based. Review candidate wording and multiple-choice options before saving. No paid cloud AI service is used.
