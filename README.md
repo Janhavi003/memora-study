@@ -78,3 +78,27 @@ npm run build
 ```
 
 Use `npm run db:studio` to inspect the local database. Do not run `db:migrate` against a production database without reviewing the migration first. The frontend remains on mock data until the integration phase.
+
+
+## Phase 4: local generation engine
+
+- Generate draft question/answer, definition, cloze, and multiple-choice cards locally.
+- Flag normalized duplicates against existing cards and within a generation batch.
+- Use the SM-2-inspired scheduling helper for review interval calculations.
+- Generated candidates are previews only; inspect them before saving.
+
+Run `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` before committing.
+
+
+## Phase 5 integration updates
+
+The Create page now calls the local generation API, loads decks from the Prisma-backed API, flags duplicate candidates, and saves only approved candidates to the selected deck. Review submissions now update persistent spaced-repetition state.
+
+Before running the app against an existing database, apply the schema migration:
+
+```powershell
+npx prisma migrate dev --name phase5_review_schedule
+npm run db:generate
+```
+
+Then run `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build`. Other pages may still use mock data and should be migrated in a subsequent integration pass.
