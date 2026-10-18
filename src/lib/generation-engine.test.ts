@@ -20,7 +20,7 @@ describe("local generation engine", () => {
     expect(result.candidates[0].options).toContain(result.candidates[0].answer);
   });
   it("normalizes text and flags exact normalized duplicates", () => {
-    expect(normalizeText("Café—Plants!")).toBe("cafe plants");
+    expect(normalizeText("Café-Plants!")).toBe("cafe plants");
     const candidates = [{ id: "1", type: "QUESTION_ANSWER" as const, question: "What is a plant?", answer: "A living thing.", approved: true, duplicate: false }];
     expect(markDuplicates(candidates, [{ question: "WHAT IS A PLANT", answer: "A living thing" }])[0].duplicate).toBe(true);
     expect(markDuplicates([...candidates, { ...candidates[0], id: "2" }])[1].duplicate).toBe(true);

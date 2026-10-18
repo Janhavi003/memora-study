@@ -1,4 +1,4 @@
-# Product Specification — Phase 1
+# Product Specification - Phase 1
 
 Phase 1 delivers a frontend prototype using mock services. Metrics are identified as demo data. Real persistence and production algorithms are deferred.
 

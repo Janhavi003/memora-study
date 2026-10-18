@@ -2,7 +2,7 @@
 
 **Turn notes into knowledge.** Memora is an open-source, local-first study workspace for turning notes into flashcards and quizzes, organizing decks, and reviewing concepts.
 
-## Phase 2 — Backend foundation
+## Phase 2 - Backend foundation
 
 This phase adds a typed JSON API using Next.js Route Handlers, Zod request validation, consistent error responses, server-side demo storage, a generation-preview endpoint, search, reviews, and calculated summary statistics. The frontend remains available and still uses its Phase 1 mock service; wiring the UI to the API is reserved for the integration phase.
 
@@ -62,7 +62,7 @@ No study notes are sent to a cloud AI provider by these endpoints. Do not expose
 - Phase 5: connect UI to API, end-to-end validation, and release packaging.
 
 
-## Phase 3 — SQLite persistence
+## Phase 3 - SQLite persistence
 
 The API now stores decks, cards, reviews, and study timestamps in local SQLite using Prisma.
 
@@ -102,3 +102,9 @@ npm run db:generate
 ```
 
 Then run `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build`. Other pages may still use mock data and should be migrated in a subsequent integration pass.
+
+## Custom deck creation from the Create page
+
+The Create page now includes a **New deck name** field and **Create deck** action below the existing deck selector. Enter a name (up to 100 characters) and create it; Memora sends the request to `POST /api/decks`, persists the deck through Prisma/SQLite, and automatically selects it as the destination for approved generated cards. You can then approve candidates and click **Save approved cards** as usual.
+
+The app's existing deck API and `createDeckSchema` validate the new deck name. If you're applying this update to an existing checkout, copy the changed `src/app/create/page.tsx` or merge the ZIP contents into your project; preserve your local `.env`, SQLite database, and existing migration history.
