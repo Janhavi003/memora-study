@@ -1,110 +1,46 @@
 # Memora
 
-**Turn notes into knowledge.** Memora is an open-source, local-first study workspace for turning notes into flashcards and quizzes, organizing decks, and reviewing concepts.
+**Turn notes into knowledge.** Memora is a local-first study workspace for turning notes into flashcards, reviewing decks, and practicing recall.
 
-## Phase 2 - Backend foundation
+## Start here
 
-This phase adds a typed JSON API using Next.js Route Handlers, Zod request validation, consistent error responses, server-side demo storage, a generation-preview endpoint, search, reviews, and calculated summary statistics. The frontend remains available and still uses its Phase 1 mock service; wiring the UI to the API is reserved for the integration phase.
+The default route `/` is the landing page. The dashboard is available at `/dashboard` after clicking **Start studying**. The landing page is intentionally preserved.
 
-## Technology
+## Windows setup
 
-- Next.js App Router and React
-- TypeScript
-- Zod request validation
-- Vitest
-- Local heuristic generation preview (no cloud LLM or paid API key)
+See [SETUP_WINDOWS.md](SETUP_WINDOWS.md) for safe setup instructions, including local SQLite configuration and migration safety.
 
-## Setup
-
-```bash
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 npm install
+npm run db:generate
+npx prisma migrate status
 npm run dev
 ```
 
 Open `http://localhost:3000`.
 
-## Quality commands
+## Quality checks
 
-```bash
-npm run lint
+```powershell
 npm run typecheck
 npm run test
+npm run lint
 npm run build
 ```
 
-## API quick reference
+## Technology
 
-| Method | Route | Purpose |
-|---|---|---|
-| GET, POST | `/api/decks` | List/create decks |
-| GET, PATCH, DELETE | `/api/decks/:id` | Read/update/delete a deck |
-| GET, POST | `/api/decks/:id/cards` | List/create cards |
-| PATCH, DELETE | `/api/decks/:id/cards/:cardId` | Update/delete a card |
-| POST | `/api/generation` | Validate notes and return heuristic card candidates |
-| POST | `/api/reviews` | Record a self-rated review |
-| GET | `/api/search?q=...` | Search decks and cards |
-| GET | `/api/statistics` | Get counts derived from in-memory data |
+- Next.js App Router and React
+- TypeScript and Tailwind CSS
+- Prisma with a local SQLite database
+- Vitest
+- Local heuristic generation preview, without a cloud AI provider or paid AI API key
 
-Full request shapes and error codes are in [`docs/API_CONTRACTS.md`](docs/API_CONTRACTS.md).
+## Data safety
 
-## Important data limitation
+The source ZIP excludes `.env`, local databases, `node_modules`, and build output. Preserve your own `.env`, SQLite database, and existing migration history. Do not run `prisma migrate reset` as a routine troubleshooting step. If Prisma asks to reset a database containing important data, stop and back it up first.
 
-The API uses a server-process in-memory store seeded with demo data. Changes may be lost on restart; this is not durable persistence and is not a multi-user deployment design. SQLite and Prisma are planned for Phase 3. The API is not yet connected to the frontend's mock service. The generation endpoint uses lightweight local heuristics, not an LLM, and generated candidates should be reviewed before use.
+## UI
 
-## Privacy
-
-No study notes are sent to a cloud AI provider by these endpoints. Do not expose this unauthenticated local API directly to the public internet.
-
-## Roadmap
-
-- Phase 3: SQLite/Prisma schema, migrations, seed data, durable repositories.
-- Phase 4: generation, quiz, duplicate detection, and spaced-repetition algorithms.
-- Phase 5: connect UI to API, end-to-end validation, and release packaging.
-
-
-## Phase 3 - SQLite persistence
-
-The API now stores decks, cards, reviews, and study timestamps in local SQLite using Prisma.
-
-```powershell
-Copy-Item .env.example .env
-npm install
-npm run db:migrate
-npm run db:seed
-npm run typecheck
-npm run lint
-npm run test
-npm run build
-```
-
-Use `npm run db:studio` to inspect the local database. Do not run `db:migrate` against a production database without reviewing the migration first. The frontend remains on mock data until the integration phase.
-
-
-## Phase 4: local generation engine
-
-- Generate draft question/answer, definition, cloze, and multiple-choice cards locally.
-- Flag normalized duplicates against existing cards and within a generation batch.
-- Use the SM-2-inspired scheduling helper for review interval calculations.
-- Generated candidates are previews only; inspect them before saving.
-
-Run `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` before committing.
-
-
-## Phase 5 integration updates
-
-The Create page now calls the local generation API, loads decks from the Prisma-backed API, flags duplicate candidates, and saves only approved candidates to the selected deck. Review submissions now update persistent spaced-repetition state.
-
-Before running the app against an existing database, apply the schema migration:
-
-```powershell
-npx prisma migrate dev --name phase5_review_schedule
-npm run db:generate
-```
-
-Then run `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build`. Other pages may still use mock data and should be migrated in a subsequent integration pass.
-
-## Custom deck creation from the Create page
-
-The Create page now includes a **New deck name** field and **Create deck** action below the existing deck selector. Enter a name (up to 100 characters) and create it; Memora sends the request to `POST /api/decks`, persists the deck through Prisma/SQLite, and automatically selects it as the destination for approved generated cards. You can then approve candidates and click **Save approved cards** as usual.
-
-The app's existing deck API and `createDeckSchema` validate the new deck name. If you're applying this update to an existing checkout, copy the changed `src/app/create/page.tsx` or merge the ZIP contents into your project; preserve your local `.env`, SQLite database, and existing migration history.
+Deep Indigo and Soft Cream are the primary colors, supported by Fresh Green, Sunny Amber, and Coral accents. Light and dark themes are supported. Motion is intentionally subtle and respects reduced-motion settings.
