@@ -1,4 +1,4 @@
-# Architecture — Phase 2
+# Architecture - Phase 2
 
 Memora remains a Next.js App Router application. API Route Handlers provide the HTTP boundary, Zod schemas define input contracts, a small response layer standardizes success/error envelopes, and `memoryStore` owns server-side demo data operations. The generation endpoint calls the existing local heuristic preview service; it does not call a cloud model.
 

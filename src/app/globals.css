@@ -1,6 +1,96 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root{--paper:48 33% 96%;--surface:45 50% 99%;--ink:145 13% 15%;--muted:105 10% 91%;--line:80 10% 84%;--forest:150 42% 25%;--sage:105 22% 88%;--clay:13 38% 49%}
-.dark{--paper:150 13% 9%;--surface:150 12% 13%;--ink:45 24% 92%;--muted:145 10% 20%;--line:145 8% 27%;--forest:142 35% 43%;--sage:145 12% 24%;--clay:13 45% 65%}
-*{box-sizing:border-box}html{min-height:100%}body{min-height:100vh;background:hsl(var(--paper));color:hsl(var(--ink))}button,input,textarea,select{font:inherit}::selection{background:hsl(var(--sage));color:hsl(var(--ink))}:focus-visible{outline:2px solid hsl(var(--forest));outline-offset:3px}a{text-underline-offset:4px}
+
+:root {
+  color-scheme: light;
+  --paper: 48 33% 96%;
+  --surface: 0 0% 100%;
+  --ink: 220 24% 16%;
+  --slate: 220 9% 46%;
+  --muted: 225 18% 93%;
+  --line: 220 13% 86%;
+  --forest: 229 53% 37%;
+  --sage: 228 65% 94%;
+  --clay: 0 100% 71%;
+  --success: 145 63% 49%;
+  --reward: 38 91% 55%;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark {
+  color-scheme: dark;
+  --paper: 230 17% 10%;
+  --surface: 230 16% 14%;
+  --ink: 220 14% 96%;
+  --slate: 220 10% 72%;
+  --muted: 230 14% 20%;
+  --line: 225 12% 29%;
+  --forest: 229 75% 70%;
+  --sage: 229 30% 23%;
+  --clay: 0 92% 76%;
+  --success: 145 55% 58%;
+  --reward: 38 95% 64%;
+}
+
+* { box-sizing: border-box; }
+html { min-height: 100%; scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body {
+  min-height: 100vh;
+  background: hsl(var(--paper));
+  color: hsl(var(--ink));
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 240ms ease, color 240ms ease;
+}
+button, input, textarea, select { font: inherit; }
+::selection { background: hsl(var(--sage)); color: hsl(var(--ink)); }
+:focus-visible { outline: 2px solid hsl(var(--forest)); outline-offset: 3px; }
+a { text-underline-offset: 4px; }
+
+/* Small, purposeful motion makes the workspace feel responsive without getting in the way. */
+@keyframes memora-fade-up {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes memora-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes memora-glow {
+  0%, 100% { opacity: .42; transform: scale(.98); }
+  50% { opacity: .72; transform: scale(1.03); }
+}
+main > * { animation: memora-fade-up 520ms var(--ease-out) both; }
+main > *:nth-child(2) { animation-delay: 70ms; }
+main > *:nth-child(3) { animation-delay: 130ms; }
+main > *:nth-child(4) { animation-delay: 190ms; }
+article, [class*="rounded-2xl border border-line bg-surface"] {
+  transition: transform 220ms var(--ease-out), box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease;
+}
+article:hover { border-color: hsl(var(--forest) / .28); }
+button, a, input, textarea, select {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
+}
+button:active, a:active { transform: scale(.985); }
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 4px hsl(var(--forest) / .10);
+}
+.landing-hero-copy { animation: memora-fade-up 700ms var(--ease-out) both; }
+.landing-hero-preview { animation: memora-fade-up 800ms var(--ease-out) 100ms both; }
+.landing-preview-card { box-shadow: 0 24px 70px hsl(229 40% 25% / .12); transition: transform 350ms var(--ease-out), box-shadow 350ms ease; }
+.landing-preview-card:hover { transform: translateY(-5px); box-shadow: 0 32px 84px hsl(229 40% 25% / .17); }
+.landing-glow { animation: memora-glow 7s ease-in-out infinite; }
+.landing-step { transition: transform 220ms var(--ease-out), border-color 220ms ease, box-shadow 220ms ease; }
+.landing-step:hover { transform: translateX(5px); border-color: hsl(var(--forest) / .28); box-shadow: 0 10px 30px hsl(229 40% 25% / .06); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
