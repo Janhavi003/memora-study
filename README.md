@@ -1,46 +1,57 @@
 # Memora
 
-**Turn notes into knowledge.** Memora is a local-first study workspace for turning notes into flashcards, reviewing decks, and practicing recall.
+## About the Project
 
-## Start here
+Memora is a local-first study workspace designed to help learners turn notes into flashcards, organize study decks, practice active recall, and build consistent review habits. It combines a calm Indigo and Cream interface with local SQLite persistence, so study content can be managed without depending on a cloud AI service.
 
-The default route `/` is the landing page. The dashboard is available at `/dashboard` after clicking **Start studying**. The landing page is intentionally preserved.
+## Live Demo
 
-## Windows setup
+**Live demo:** 
 
-See [SETUP_WINDOWS.md](SETUP_WINDOWS.md) for safe setup instructions, including local SQLite configuration and migration safety.
+## Features
 
-```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-npm install
-npm run db:generate
-npx prisma migrate status
-npm run dev
-```
+- Landing page as the default entry point, with the dashboard available separately.
+- Create, browse, search, rename, duplicate, and delete study decks.
+- Turn pasted notes into editable flashcard suggestions using local heuristic processing.
+- Review generated card suggestions and approve the cards you want to keep.
+- Study flashcards one at a time by revealing answers and recording self-assessments.
+- Practice with multiple-choice quizzes.
+- Save decks, cards, and review activity locally with SQLite and Prisma.
+- Use spaced-repetition scheduling to support future reviews.
+- Track study statistics and manage preferences.
+- Switch between light and dark themes.
+- Responsive layouts, smooth transitions, subtle animations, accessible focus states, and reduced-motion support.
+- No cloud AI provider or paid AI API key required for the local generation preview.
 
-Open `http://localhost:3000`.
+## Technologies Used
 
-## Quality checks
+- **Next.js 15** with the App Router
+- **React 19** and **TypeScript**
+- **Tailwind CSS** for styling
+- **Prisma ORM** with **SQLite** for local persistence
+- **Vitest** and Testing Library for tests
+- **Zod** for request validation
+- **Lucide React** for icons
+- **next-themes** for theme handling
 
-```powershell
-npm run typecheck
-npm run test
-npm run lint
-npm run build
-```
+## What I Learned
 
-## Technology
+- Structuring a full-stack application with Next.js App Router pages and API routes.
+- Designing typed request validation and separating server-side data access from UI components.
+- Modeling decks, flashcards, reviews, and study activity with Prisma and SQLite.
+- Working with database migrations while protecting existing local data.
+- Building active-recall and spaced-repetition study workflows.
+- Creating reusable UI components, theme tokens, responsive layouts, and accessible interaction states.
+- Writing automated tests and using type checking, linting, and production builds to catch regressions.
+- Handling local-first functionality without relying on a hosted AI service.
 
-- Next.js App Router and React
-- TypeScript and Tailwind CSS
-- Prisma with a local SQLite database
-- Vitest
-- Local heuristic generation preview, without a cloud AI provider or paid AI API key
+## Future Enhancements
 
-## Data safety
-
-The source ZIP excludes `.env`, local databases, `node_modules`, and build output. Preserve your own `.env`, SQLite database, and existing migration history. Do not run `prisma migrate reset` as a routine troubleshooting step. If Prisma asks to reset a database containing important data, stop and back it up first.
-
-## UI
-
-Deep Indigo and Soft Cream are the primary colors, supported by Fresh Green, Sunny Amber, and Coral accents. Light and dark themes are supported. Motion is intentionally subtle and respects reduced-motion settings.
+- Deploy a public demo with secure production configuration.
+- Add account-based authentication and optional encrypted synchronization across devices.
+- Support importing notes and documents from more file formats.
+- Improve local card generation with configurable extraction rules and better duplicate detection.
+- Add richer study analytics, learning streaks, and configurable review goals.
+- Add keyboard shortcuts and more accessibility testing.
+- Expand quiz types and provide explanations for answers.
+- Add end-to-end tests for the complete deck creation and study workflows.

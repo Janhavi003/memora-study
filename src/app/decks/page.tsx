@@ -1,16 +1,46 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, Search, SlidersHorizontal } from "lucide-react";
+
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { ArrowLeft, Clock3, Play, Plus } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { Button, Input, PageTitle } from "@/components/ui";
-import { DeckCard } from "@/components/deck-card";
+import { PageTitle, Panel } from "@/components/ui";
 import type { Deck } from "@/lib/types";
-export default function DecksPage() {
- const [decks,setDecks]=useState<Deck[]>([]),[q,setQ]=useState(""),[subject,setSubject]=useState("All subjects"),[show,setShow]=useState(false),[name,setName]=useState(""),[desc,setDesc]=useState(""),[sub,setSub]=useState("General"),[message,setMessage]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false);
- const refresh=useCallback(async()=>{try{const r=await fetch("/api/decks",{cache:"no-store"});const p=await r.json();if(!r.ok)throw new Error(p.error?.message||"Could not load decks.");setDecks((p.data??p) as Deck[]);setError("");}catch(e){setError(e instanceof Error?e.message:"Could not load decks.");}},[]);
- useEffect(()=>{void refresh();},[refresh]);
- const subjects=["All subjects",...Array.from(new Set(decks.map(d=>d.subject)))];
- const filtered=useMemo(()=>decks.filter(d=>(d.name+" "+d.description+" "+d.subject).toLowerCase().includes(q.toLowerCase())&&(subject==="All subjects"||d.subject===subject)),[decks,q,subject]);
- async function createDeck(e:React.FormEvent<HTMLFormElement>){e.preventDefault();if(!name.trim()){setError("Give your deck a name first.");return;}setBusy(true);setError("");setMessage("");try{const r=await fetch("/api/decks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name.trim(),description:desc.trim(),subject:sub.trim()||"General"})});const p=await r.json();if(!r.ok)throw new Error(p.error?.message||"Could not create deck.");const d=(p.data??p) as Deck;setDecks(old=>[d,...old.filter(x=>x.id!==d.id)]);setName("");setDesc("");setSub("General");setShow(false);setMessage(`Created “${d.name}” and saved it to your library.`);}catch(e){setError(e instanceof Error?e.message:"Could not create deck.");}finally{setBusy(false);}}
- return <AppShell><PageTitle eyebrow="Your learning library" title="Decks, in good order." subtitle="Keep each subject together and make the next study session easy to start." action={<Button onClick={()=>setShow(v=>!v)}><Plus size={16}/> New deck</Button>}/><div className="mb-6 flex flex-col gap-3 sm:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-3 text-ink/40" size={17}/><Input aria-label="Search decks" value={q} onChange={e=>setQ(e.target.value)} placeholder="Search decks, topics, or descriptions…" className="pl-10"/></div><div className="flex items-center gap-2"><SlidersHorizontal size={16} className="text-ink/50"/><select aria-label="Filter by subject" value={subject} onChange={e=>setSubject(e.target.value)} className="rounded-xl border border-line bg-surface px-3 py-2.5 text-sm">{subjects.map(s=><option key={s}>{s}</option>)}</select></div></div>{show&&<form className="mb-6 grid gap-3 rounded-2xl border border-line bg-surface p-5 sm:grid-cols-2" onSubmit={createDeck}><h2 className="font-display text-xl sm:col-span-2">Create a deck</h2><label className="text-sm">Deck name<Input required value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Organic Chemistry" className="mt-1"/></label><label className="text-sm">Subject<Input value={sub} onChange={e=>setSub(e.target.value)} placeholder="General" className="mt-1"/></label><label className="text-sm sm:col-span-2">Description<Input value={desc} onChange={e=>setDesc(e.target.value)} placeholder="What will you learn?" className="mt-1"/></label><div className="flex gap-2 sm:col-span-2"><Button type="submit" disabled={busy}>{busy?"Creating…":"Create deck"}</Button><Button type="button" variant="outline" onClick={()=>setShow(false)}>Cancel</Button></div></form>}{error&&<p role="alert" className="mb-4 rounded-xl border border-clay/50 bg-clay/15 p-3 text-sm text-ink">{error}</p>}{message&&<p role="status" className="mb-4 rounded-xl border border-success/40 bg-success/15 p-3 text-sm text-ink">{message}</p>}{filtered.length?<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{filtered.map(d=><DeckCard key={d.id} deck={d} onChange={()=>void refresh()}/>)}</div>:<div className="rounded-2xl border border-dashed border-line p-12 text-center"><h2 className="font-display text-2xl">{q||subject!=="All subjects"?"No matching decks":"No decks yet"}</h2><p className="mt-2 text-sm text-ink/55">Create a deck to give your study cards a home.</p><Button className="mt-5" onClick={()=>setShow(true)}>Create a deck</Button></div>}</AppShell>;
+
+export default function DeckDetail() {
+  const { id } = useParams<{ id: string }>();
+  const [deck, setDeck] = useState<Deck | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadDeck = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/decks/${encodeURIComponent(id)}`, { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error?.message || "Could not load this deck.");
+      setDeck((payload.data ?? payload) as Deck);
+    } catch (err) {
+      setDeck(null);
+      setError(err instanceof Error ? err.message : "Could not load this deck.");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => { void loadDeck(); }, [loadDeck]);
+
+  if (loading) return <AppShell><p role="status" className="text-sm text-ink/60">Loading deck...</p></AppShell>;
+  if (!deck) return <AppShell><div className="rounded-2xl border border-line bg-surface p-8"><h1 className="font-display text-2xl">Deck unavailable</h1><p role="alert" className="mt-2 text-sm text-ink/60">{error || "This deck could not be found."}</p><Link href="/decks" className="mt-4 inline-flex items-center gap-2 text-sm text-forest underline"><ArrowLeft size={15}/> Back to decks</Link></div></AppShell>;
+
+  const dueCount = deck.cards.filter((card) => card.due).length;
+  return <AppShell>
+    <Link href="/decks" className="mb-5 inline-flex items-center gap-2 text-sm text-ink/55 hover:text-forest"><ArrowLeft size={15}/> All decks</Link>
+    <PageTitle eyebrow={deck.subject} title={deck.name} subtitle={deck.description || "Your saved study cards."} action={<div className="flex flex-wrap gap-2"><Link href={`/decks/${deck.id}/study`} className="inline-flex items-center rounded-xl bg-forest px-4 py-2.5 text-sm font-semibold text-white"><Play size={15} className="mr-2"/> Study deck</Link><Link href="/create" className="inline-flex items-center rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold"><Plus size={15} className="mr-2"/> Add cards</Link><Link href={`/decks/${deck.id}/quiz`} className="inline-flex items-center rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold">Take quiz</Link></div>} />
+    <div className="mb-6 grid gap-3 sm:grid-cols-3"><Panel><p className="text-xs text-ink/55">Total cards</p><p className="mt-1 font-display text-3xl">{deck.cards.length}</p></Panel><Panel><p className="text-xs text-ink/55">Due for review</p><p className="mt-1 font-display text-3xl">{dueCount}</p></Panel><Panel><p className="flex items-center gap-2 text-xs text-ink/55"><Clock3 size={14}/> Last studied</p><p className="mt-2 font-semibold">{deck.lastStudiedAt ? new Date(deck.lastStudiedAt).toLocaleDateString() : "Not recorded"}</p></Panel></div>
+    <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-2xl">Cards in this deck</h2><span className="text-xs text-ink/50">{deck.cards.length} saved</span></div>
+    {deck.cards.length ? <div className="space-y-3">{deck.cards.map((card, index) => <Panel key={card.id} className="flex gap-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-muted text-xs text-ink/55">{String(index + 1).padStart(2, "0")}</span><div className="min-w-0 flex-1"><p className="font-semibold">{card.question}</p><p className="mt-2 text-sm leading-6 text-ink/60">{card.answer}</p></div>{card.due && <span className="h-fit rounded-full bg-sage px-2 py-1 text-[10px] font-semibold text-forest">Due</span>}</Panel>)}</div> : <div className="rounded-2xl border border-dashed border-line p-10 text-center"><h3 className="font-display text-xl">No cards yet</h3><p className="mt-2 text-sm text-ink/55">Generate cards from your notes and save them to this deck.</p><Link href="/create" className="mt-4 inline-flex rounded-xl bg-forest px-4 py-2.5 text-sm font-semibold text-white">Create cards</Link></div>}
+  </AppShell>;
 }
