@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,13 +9,13 @@ datasource db {
 }
 
 model Deck {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String
-  description   String   @default("")
-  subject       String   @default("General")
-  color         String   @default("sage")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  description   String        @default("")
+  subject       String        @default("General")
+  color         String        @default("sage")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   lastStudiedAt DateTime?
   cards         Card[]
   reviews       Review[]
@@ -22,21 +23,22 @@ model Deck {
 }
 
 model Card {
-  id         String   @id @default(cuid())
-  deckId     String
-  type       String   @default("QUESTION_ANSWER")
-  question   String
-  answer     String
-  optionsJson String?
-  due        Boolean  @default(true)
-  repetitions Int     @default(0)
-  intervalDays Int    @default(0)
-  easeFactor Float    @default(2.5)
-  dueAt      DateTime @default(now())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  deck       Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
-  reviews    Review[]
+  id           String   @id @default(cuid())
+  deckId       String
+  type         String   @default("QUESTION_ANSWER")
+  question     String
+  answer       String
+  optionsJson  String?
+  due          Boolean  @default(true)
+  repetitions  Int      @default(0)
+  intervalDays Int      @default(0)
+  easeFactor   Float    @default(2.5)
+  dueAt        DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deck         Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  reviews      Review[]
+
   @@index([deckId])
 }
 
@@ -48,17 +50,18 @@ model Review {
   reviewedAt DateTime @default(now())
   deck       Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
   card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
   @@index([deckId, reviewedAt])
   @@index([cardId, reviewedAt])
 }
 
 model StudySession {
-  id          String   @id @default(cuid())
-  deckId      String
-  startedAt   DateTime @default(now())
-  endedAt     DateTime?
-  cardsSeen   Int      @default(0)
-  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  deckId    String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  cardsSeen Int       @default(0)
+  deck      Deck      @relation(fields: [deckId], references: [id], onDelete: Cascade)
 }
 
 model QuizAttempt {
@@ -71,15 +74,15 @@ model QuizAttempt {
 }
 
 model Preference {
-  key        String   @id
-  valueJson  String
-  updatedAt  DateTime @updatedAt
+  key       String   @id
+  valueJson String
+  updatedAt DateTime @updatedAt
 }
 
 model GenerationRecord {
-  id          String   @id @default(cuid())
-  sourceHash  String
-  requested   Int
-  generated   Int
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  sourceHash String
+  requested Int
+  generated Int
+  createdAt DateTime @default(now())
 }
